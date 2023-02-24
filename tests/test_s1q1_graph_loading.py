@@ -2,7 +2,7 @@
 import sys 
 sys.path.append("delivery_network/")
 
-import unittest 
+import unittest
 from graph import Graph, graph_from_file
 
 class Test_GraphLoading(unittest.TestCase):

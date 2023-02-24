@@ -41,7 +41,8 @@ class Graph:
     def get_path_with_power(self, src, dest, power):
 
         
-        
+git config --global user.email "giraudmathieu@outlook.fr"
+git config --global user.name "MathieuGir"
 
         
         

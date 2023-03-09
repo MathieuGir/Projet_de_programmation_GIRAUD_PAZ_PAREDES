@@ -4,7 +4,42 @@ class Graph:
         self.graph = dict([(n, []) for n in nodes])
         self.nb_nodes = len(nodes)
         self.nb_edges = 0
+        
     
+
+
+    def dfs(self, node, node_visited):
+        """
+        This function is a depth-first-search algorithm.
+        Parameters : 
+        node : the starting node of the DFS
+        node_visited : a dict representing if a gievn node (key of the dictionary) has been visited or not (value of the dictionary is a Boolean)
+        """
+  
+        component = [node] #Initialization
+
+        for neighbour in self.graph[node]:
+            neighbour = neighbour[0]
+
+            if not node_visited[neighbour]:
+                node_visited[neighbour] = True #Update the status as this node has been visited
+                component += self.dfs(neighbour, node_visited) #Add it to the component list
+
+        return component
+
+    def connected_components(self):
+        """
+        Builds a list of connected nodes, grouped in lists, and returns it.
+        This function relies on the depth-first search alogrithm, implemented in dfs().
+        """
+        list_component = []
+        node_visited = {node:False for node in self.nodes}
+
+        for node in self.nodes:
+            if not node_visited[node]:
+                list_component.append(self.dfs(node, node_visited))
+
+        return list_component
 
 
     def __str__(self):
@@ -36,40 +71,27 @@ class Graph:
         dist: numeric (int or float), optional
             Distance between node1 and node2 on the edge. Default is 1.
         """
-        
-    
+
+
+
+
     def get_path_with_power(self, src, dest, power):
 
+        queue = [(src, [src], 0)] # BFS queue: a tuple (node, path, min_power)
+        list_visited = set() # nodes already visited by BFS
         
-git config --global user.email "giraudmathieu@outlook.fr"
-git config --global user.name "MathieuGir"
+        while queue:
+            node, path, min_power = queue.pop(0)
 
+            if node == dest and min_power >= power: # if we have reached the destination with the minimum power, return the path
+                return path
+            visited.add(node)
+            for neighbor, edge_power, _ in self.graph[node]:
+                if neighbor not in list_visited and min_power+edge_power >= power:
+                    queue.append((neighbor, path+[neighbor], min(min_power, edge_power)))
+                    list_visited.add(neighbor)
         
-        
-        raise NotImplementedError
-    
-
-    def connected_components(self):
-        list_component = []
-        node_visited = {node:False for node in self.nodes}
-
-        def dfs(node):
-
-            component = [node]
-
-            for neighbour in self.graph[node]:
-                neighbour = neighbour[0]
-
-                if not node_visited[neighbour]:
-                    node_visited[neighbour] = True
-                    component += dfs(neighbour)
-            return component
-        
-        for node in self.nodes:
-            if not node_visited[node]:
-                list_component.append(dfs(node))
-    
-        return list_component
+        return [] # if no path with the minimum power is found
 
 
 
@@ -80,39 +102,27 @@ git config --global user.name "MathieuGir"
         """
         return set(map(frozenset, self.connected_components()))
     
-    def min_power(self, src, dest):
-        
-        
-        """
-        Should return path, min_power. 
-        """
-        raise NotImplementedError
 
+    def min_power(self,origin,destination):
+            start = 0
+            length = len(self.list_of_powers)
+            end = length-1
+            if destination not in self.depth_search(origin):
+                return None
+            while start != end:
+                mid = (start+end)//2
+                if destination not in self.depth_search(origin, power=self.list_of_powers[mid]):
+                    start = mid
+                else:
+                    end = mid
+                if end-start == 1:
+                    start=end
+            return self.list_of_powers[end]
+
+
+        
 
 def graph_from_file(filename):
-    
-    with open(filename) as file:
-        line1 = file.readline().split()
-        n = int(line1[0])
-        m = int(line1[1])
-        nodes = [i for i in range(1, n+1)]
-        G = Graph(nodes)
-        for i in range(m):
-            linei = file.readline().split()
-            node1 = int(linei[0])
-            node2 = int(linei[1])
-            power_min = int(linei[2])
-
-            if len(linei)>3:
-                dist = int(linei[3])
-                G.add_edge(node1, node2, power_min, dsit)
-
-            else:
-                G.add_edge(node1, node2, power_min)
-            
-    return G 
-
-
     """
     Reads a text file and returns the graph as an object of the Graph class.
 
@@ -132,4 +142,23 @@ def graph_from_file(filename):
     G: Graph
         An object of the class Graph with the graph from file_name.
     """
- 
+
+
+    with open(filename, "r") as file:
+            n, m = map(int, file.readline().split())
+            g = Graph(range(1, n+1))
+            for _ in range(m):
+                edge = list(map(int, file.readline().split()))
+                if len(edge) == 3:
+                    node1, node2, power_min = edge
+                    g.add_edge(node1, node2, power_min) # will add dist=1 by default
+                elif len(edge) == 4:
+                    node1, node2, power_min, dist = edge
+                    g.add_edge(node1, node2, power_min, dist)
+                else:
+                    raise Exception("Format incorrect")
+    return g
+    
+
+
+

@@ -4,8 +4,7 @@ class Graph:
         self.graph = dict([(n, []) for n in nodes])
         self.nb_nodes = len(nodes)
         self.nb_edges = 0
-        
-    
+        self.list_of_neighbours = []
 
 
     def dfs(self, node, node_visited):
@@ -73,25 +72,96 @@ class Graph:
         """
 
 
+    def bfs(self, start, power=-1):
+        visited = set()  # Initializes to an empty set
+        queue = [start]  # Initializes the queue with the starting node
+
+        while queue:
+            node = queue.pop(0)  # Dequeues the node at the front of the queue
+
+            if node not in visited:
+                visited.add(node)  # Marks the node as visited
+
+                for neighbor, weight in self.graph[node]:
+                    if weight > power and power != -1:
+                        continue  # skip the neighbor if the power constraint is not met
+
+                    queue.append(neighbor)  # Enqueues the neighbor
+
+        return visited
+
+    def get_path_with_power(self, source, destination, power=-1):
+        """
+        Provides, if possible, the shortest path for a given power
+        source : node of start
+        destination : node of arrival
+        power : power constraint (by default, none)
+        """
+
+        list_visited = [] #
+        list_of_paths = [] #list of all possible paths
+        list_dist_paths = [] #corresponds to the path
+        queue = []
+
+        for component in self.connected_components():
+            if source in component and destination in component:
+                queue.append([source]) #initialization of the queue
+                list_visited.append(source) 
+
+                while queue != []:
+                    print("la queue est", queue)
+                    current_path = queue.pop()
+                    last_node = current_path[-1]
+
+                    if last_node == destination:
+                        list_of_paths.append(current_path)
+                        #list_dist_paths.append(len(current_path) - 1)
+                    
+                    else:
+                        for neighbor in self.graph[last_node]:
+                            print(neighbor, power, neighbor[1] <= power)
+                            if neighbor[1] <= power:  # skip the neighbor if the power constraint is not met
+                                print(neighbor, power)
+
+                                if neighbor[0] not in list_visited:
+                                    queue.append(current_path+[neighbor[0]])
+                                    list_visited.append(neighbor[0])
+                
+                if len(list_of_paths) >= 1:
+                    print(f"Chemins possibles {list_of_paths}")
+                    return list_of_paths[0]
+                
+                #else : 
+                    #index_shortest_path = list_dist_paths.index(min(list_dist_paths))
+                    #return list_of_paths[0]
+    
+        return None
+
+    
+            
+
+                
 
 
-    def get_path_with_power(self, src, dest, power):
+        """
+        queue = [(source, [source], 0)] # queue is a triplet (node, path, min_power)
+        list_of_paths = [] # list of all possible paths with power
 
-        queue = [(src, [src], 0)] # BFS queue: a tuple (node, path, min_power)
-        list_visited = set() # nodes already visited by BFS
-        
         while queue:
             node, path, min_power = queue.pop(0)
-
-            if node == dest and min_power >= power: # if we have reached the destination with the minimum power, return the path
-                return path
-            visited.add(node)
-            for neighbor, edge_power, _ in self.graph[node]:
-                if neighbor not in list_visited and min_power+edge_power >= power:
-                    queue.append((neighbor, path+[neighbor], min(min_power, edge_power)))
-                    list_visited.add(neighbor)
-        
-        return [] # if no path with the minimum power is found
+            if node == destination and min_power >= power: # if we have reached the destination with the minimum power, add the path
+                list_of_paths.append(path)
+            else:
+               for neighbor, edge_power, _ in self.graph[node]:
+                    if neighbor not in path and min_power+edge_power >= power:
+                        queue.append((neighbor, path+[neighbor], min(min_power, edge_power)))
+                    
+        if len(list_of_paths) == 0:
+            return None
+        elif len(list_of_paths) >= 1:
+            #min_dist : yet to code
+            return list_of_paths[min_dist]
+        """
 
 
 
@@ -103,21 +173,8 @@ class Graph:
         return set(map(frozenset, self.connected_components()))
     
 
-    def min_power(self,origin,destination):
-            start = 0
-            length = len(self.list_of_powers)
-            end = length-1
-            if destination not in self.depth_search(origin):
-                return None
-            while start != end:
-                mid = (start+end)//2
-                if destination not in self.depth_search(origin, power=self.list_of_powers[mid]):
-                    start = mid
-                else:
-                    end = mid
-                if end-start == 1:
-                    start=end
-            return self.list_of_powers[end]
+    def minimum_distance(self,origin, destination, possible_paths=[]):
+        
 
 
         

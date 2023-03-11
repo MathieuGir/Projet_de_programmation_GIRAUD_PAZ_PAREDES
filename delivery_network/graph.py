@@ -40,6 +40,12 @@ class Graph:
 
         return list_component
 
+    def connected_components_set(self):
+        """
+        The result should be a set of frozensets (one per component), 
+        For instance, for network01.in: {frozenset({1, 2, 3}), frozenset({4, 5, 6, 7})}
+        """
+        return set(map(frozenset, self.connected_components()))
 
     def __str__(self):
         """Prints the graph as a list of neighbors for each node (one per line)"""
@@ -89,6 +95,59 @@ class Graph:
                     queue.append(neighbor)  # Enqueues the neighbor
 
         return visited
+    
+    def path_distance(self, path):
+        total_distance = 0
+        for i in range(len(path)-1):
+            for neighbor in self.graph[path[i]]:
+                if neighbor[0] == path[i+1]:
+                    total_distance += neighbor[2]
+                    break
+        return total_distance
+
+    def power_required_for_path(self, path):
+        power_required_for_the_path = 0
+        for i in range(len(path)-1):
+            for neighbor in self.graph[path[i]]:
+                if neighbor[0] == path[i+1]:
+                    power_required_for_the_path = max(power_required_for_the_path, neighbor[1])
+                    break
+        return power_required_for_the_path
+
+    
+    def all_possible_paths(self, source, destination):
+        list_of_paths = []
+        list_of_distances = []
+        path_dist = []
+
+        for component in self.connected_components():
+            if source in component and destination in component:
+                queue = [[source]]
+                list_visited = []
+
+                while queue != []:
+                    current_path = queue.pop()
+                    last_node = current_path[-1]
+
+                    if last_node == destination:
+                        power_required_for_the_path = 0
+                        for i in range(len(current_path)-1):
+                            for neighbor in self.graph[current_path[i]]:
+                                if neighbor[0] == current_path[i+1]:
+                                    power_required_for_the_path = max(power_required_for_the_path, neighbor[1])
+                        list_of_paths.append(current_path)
+                        list_of_distances.append(self.path_distance(current_path))
+                        path_dist.append((current_path, self.path_distance(current_path), power_required_for_the_path))
+                    else:
+                        for neighbor in self.graph[last_node]:
+                            if neighbor[0] not in current_path:
+                                queue.append(current_path+[neighbor[0]])
+                                list_visited.append(neighbor[0])
+
+        print(list_of_distances)
+        print(list_of_paths)
+        print(path_dist)
+        return path_dist
 
     def get_path_with_power(self, source, destination, power=-1):
         """
@@ -98,83 +157,54 @@ class Graph:
         power : power constraint (by default, none)
         """
 
-        list_visited = [] #
-        list_of_paths = [] #list of all possible paths
-        list_dist_paths = [] #corresponds to the path
-        queue = []
-
-        for component in self.connected_components():
-            if source in component and destination in component:
-                queue.append([source]) #initialization of the queue
-                list_visited.append(source) 
-
-                while queue != []:
-                    print("la queue est", queue)
-                    current_path = queue.pop()
-                    last_node = current_path[-1]
-
-                    if last_node == destination:
-                        list_of_paths.append(current_path)
-                        #list_dist_paths.append(len(current_path) - 1)
-                    
-                    else:
-                        for neighbor in self.graph[last_node]:
-                            print(neighbor, power, neighbor[1] <= power)
-                            if neighbor[1] <= power:  # skip the neighbor if the power constraint is not met
-                                print(neighbor, power)
-
-                                if neighbor[0] not in list_visited:
-                                    queue.append(current_path+[neighbor[0]])
-                                    list_visited.append(neighbor[0])
-                
-                if len(list_of_paths) >= 1:
-                    print(f"Chemins possibles {list_of_paths}")
-                    return list_of_paths[0]
-                
-                #else : 
-                    #index_shortest_path = list_dist_paths.index(min(list_dist_paths))
-                    #return list_of_paths[0]
-    
-        return None
-
-    
-            
-
-                
-
-
-        """
-        queue = [(source, [source], 0)] # queue is a triplet (node, path, min_power)
-        list_of_paths = [] # list of all possible paths with power
-
-        while queue:
-            node, path, min_power = queue.pop(0)
-            if node == destination and min_power >= power: # if we have reached the destination with the minimum power, add the path
-                list_of_paths.append(path)
-            else:
-               for neighbor, edge_power, _ in self.graph[node]:
-                    if neighbor not in path and min_power+edge_power >= power:
-                        queue.append((neighbor, path+[neighbor], min(min_power, edge_power)))
-                    
-        if len(list_of_paths) == 0:
-            return None
-        elif len(list_of_paths) >= 1:
-            #min_dist : yet to code
-            return list_of_paths[min_dist]
-        """
-
-
-
-    def connected_components_set(self):
-        """
-        The result should be a set of frozensets (one per component), 
-        For instance, for network01.in: {frozenset({1, 2, 3}), frozenset({4, 5, 6, 7})}
-        """
-        return set(map(frozenset, self.connected_components()))
-    
-
-    def minimum_distance(self,origin, destination, possible_paths=[]):
+        paths = self.all_possible_paths(source, destination)
+        print(paths)
+        shortest_path_index = 0
         
+        for i in range(0, len(paths)):
+    
+            if paths[i][1] < paths[shortest_path_index][1]:
+                shortest_path_index = i
+        
+        shortest_path = paths[shortest_path_index][0]
+        
+        return shortest_path
+
+        
+
+
+
+    
+
+   
+    def min_power(self, source, destination):
+        """
+        Provides, if possible, the shortest path for a given power
+        source : node of start
+        destination : node of arrival
+        power : power constraint (by default, none)
+        """
+        
+        paths = self.all_possible_paths(source, destination)
+        print(paths)
+        shortest_path_index = 0
+        
+        for i in range(0, len(paths)):
+    
+            if paths[i][2] < paths[shortest_path_index][2]:
+                shortest_path_index = i
+        
+        shortest_path = paths[shortest_path_index][0]
+        min_power = paths[shortest_path_index][2]
+        
+        return (shortest_path, min_power)
+
+
+
+
+
+
+    
 
 
         

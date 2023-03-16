@@ -306,11 +306,12 @@ def kruskal(g):
     This function returns a minimum spanning tree of a given graph
     We are referring to the Dasgupta et al book https://people.eecs.berkeley.edu/~vazirani/algorithms/chap5.pdf
     
-    Please note that the code does not work. I have an issue with the initialisation of the mst. The code after works (tested with g_mst = g, and it gives an output, though not the desired one)
+    Please note that the code does not work. The nodes in the mst are not added by ascending power
     """
 
     list_edges = g.list_edges
     edges_sorted = sorted(list_edges, key=lambda x: x[2]) #we sort the edges by their power
+    print("here are sorted edges", edges_sorted)
     g_mst = Graph(g.nodes)
     print("Initialisation of mst", g_mst)
     mst_dict = {}
@@ -323,7 +324,9 @@ def kruskal(g):
         mst_dict[node].makeset()
 
     for edge in edges_sorted:
+        print("Edge is",edge)
         node1, node2, min_power = edge[0], edge[1], edge[2]
+        
         
         if mst_dict[node1].find() != mst_dict[node2].find() :
             mst_set.add((node1, node2, min_power))

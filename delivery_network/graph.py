@@ -305,8 +305,6 @@ def kruskal(g):
     """
     This function returns a minimum spanning tree of a given graph
     We are referring to the Dasgupta et al book https://people.eecs.berkeley.edu/~vazirani/algorithms/chap5.pdf
-    
-    Please note that the code does not work. The nodes in the mst are not added by ascending power
     """
 
     list_edges = g.list_edges
@@ -315,7 +313,7 @@ def kruskal(g):
     g_mst = Graph(g.nodes)
     print("Initialisation of mst", g_mst)
     mst_dict = {}
-    mst_set = set()
+    mst_set = []
     print("Second check")
 
 
@@ -326,17 +324,53 @@ def kruskal(g):
     for edge in edges_sorted:
         print("Edge is",edge)
         node1, node2, min_power = edge[0], edge[1], edge[2]
-        
-        
+
         if mst_dict[node1].find() != mst_dict[node2].find() :
-            mst_set.add((node1, node2, min_power))
+            mst_set.append((node1, node2, min_power))
+            print("temp mst_set", mst_set)
             mst_dict[node1].union(mst_dict[node2])
     
 
+    print("mst set is", mst_set)
+
 
     for edge in mst_set:
+        print(edge)
         source, destination, power = edge[0], edge[1], edge[2]
         g_mst.add_edge(source, destination, power)  #we add the 'elected' edges to the mst
     
     print("End", g_mst)
     return g_mst
+
+
+
+def kruskal_min_power(g, source, destination)
+
+list_of_paths = []
+ 
+for component in g.connected_components():
+    if source in component and destination in component: #if there is a connection between source and destination
+        queue = [[source]]
+        list_visited = []
+
+    while queue != []: #we explore all possible paths, meaning we explore all nodes
+        current_path = queue.pop() #
+        last_node = current_path[-1]
+
+        if last_node == destination: 
+           power_required_for_the_path = 0
+            for i in range(len(current_path)-1):
+                for neighbor in g.graph[current_path[i]]:
+                    if neighbor[0] == current_path[i+1]:
+                        power_required_for_the_path = max(power_required_for_the_path, neighbor[1])
+                        list_of_paths.append(current_path)
+                        
+                else:
+                    for neighbor in g.graph[last_node]:
+                        if neighbor[0] not in current_path: #we don't go over the same node twice 
+                            queue.append(current_path+[neighbor[0]]) 
+                            list_visited.append(neighbor[0]) #this node has been visited
+
+    
+    return path, min_power
+    

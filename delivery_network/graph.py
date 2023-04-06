@@ -9,6 +9,8 @@ class Graph:
         self.nb_edges = 0
         self.list_edges = []
         self.dict_edges = {}
+        self.parents = {}
+        self.depths = {}
         
 
 
@@ -17,7 +19,7 @@ class Graph:
         This function is a depth-first-search algorithm.
         Parameters : 
         node : the starting node of the DFS
-        node_visited : a dict representing if a gievn node (key of the dictionary) has been visited or not (value of the dictionary is a Boolean)
+        node_visited : a dict representing if a given node (key of the dictionary) has been visited or not (value of the dictionary is a Boolean)
         """
   
         component = [node] #Initialization
@@ -58,7 +60,7 @@ class Graph:
             output = "The graph is empty"            
         else:
             output = f"The graph has {self.nb_nodes} nodes and {self.nb_edges} edges.\n"
-            for source, destination in self.graph.items():
+            for source, destination in self.graph.items(): 
                 self.dict_edges[source] = destination  #we create a dictionary where each key is the node of source, and the value are the possible paths
                 output += f"{source}-->{destination}\n"
  
@@ -125,6 +127,8 @@ class Graph:
             - power required to achieve the given path 
 
         Please not that this works for small networks only, as it is not optimized at all
+        Example  of output :
+        all_possible_paths(1,2): 
         """
  
         list_of_paths = []
@@ -187,8 +191,6 @@ class Graph:
         
         return shortest_path
 
-
-   
     def min_power(self, source, destination):
         """
         Provides, if possible, the shortest path for a given power
@@ -228,6 +230,59 @@ class Graph:
                 return None
         return time_path
 
+    
+    def dfs_parents(self, node, visited, parents, depths):
+        depth=0
+        parents
+        
+        for neighbour,puissance,distance in self.dict_edges[node]:
+            visited.append(node)
+            depth+=1
+            if neighbour not in visited:
+                parents[neighbour]=(node,puissance)
+                depths[neighbour]=(depth)
+                dfs_parents_and_depths(self, neighbour, visited, parents,depths)
+        print("parents",parents)
+        print("depths", depths)
+        self.parents = parents
+        self.depths = depths
+
+    def min_power_kruskal(g_mst, start, dest):
+        """
+        This function returns the shortest path between two nodes in a graph, using the depths of the start and destination nodes in the mst tree 
+        """
+
+
+        if start in g_mst.connected_components and dest in g.mst_connected_components:
+            parents, depths = dfs_parents(g_mst, 1, [], {1:(1,0)}, {1 : 0}) #we initialize the root of the mst as the first node
+            path_from_start = []
+            path_from_dest = []
+            final_path = [] 
+
+            while depths[start] > depths[dest]:
+                path_from_start.append(start)
+                start = parents[start]
+
+            while depths[dest] > depths[dest]:
+                path_from_dest.append(dest)
+                dest = parents[depth]
+
+            while start != end:
+                path_from_start.append(start)
+                path_from_dest.append(end)
+                start = parents[start]
+                end = parents[end]
+
+            reverse_path = path_from_dest.reverse() #as we started from the end, we have to reverse the path_from_dest
+            reverse_path.pop(0) #we remove the first node of path_from_dest, which is the same as the last element of the path_from_start
+            
+            final_path = path_from_start + reverse_path
+            return final_path, power_min
+
+        else : #Start and Destination are not connected 
+            
+            return None
+        
 
 
 def graph_from_file(filename):
@@ -308,69 +363,153 @@ def kruskal(g):
     """
 
     list_edges = g.list_edges
-    edges_sorted = sorted(list_edges, key=lambda x: x[2]) #we sort the edges by their power
-    print("here are sorted edges", edges_sorted)
+    edges_sorted = sorted(list_edges, key=lambda x: x[2]) #we sort the edges by their power  
     g_mst = Graph(g.nodes)
-    print("Initialisation of mst", g_mst)
     mst_dict = {}
     mst_set = []
-    print("Second check")
-
 
     for node in g.nodes: 
         mst_dict[node] = UnionFind() 
         mst_dict[node].makeset()
 
     for edge in edges_sorted:
-        print("Edge is",edge)
+        
         node1, node2, min_power = edge[0], edge[1], edge[2]
 
         if mst_dict[node1].find() != mst_dict[node2].find() :
             mst_set.append((node1, node2, min_power))
-            print("temp mst_set", mst_set)
             mst_dict[node1].union(mst_dict[node2])
     
 
-    print("mst set is", mst_set)
-
-
     for edge in mst_set:
-        print(edge)
         source, destination, power = edge[0], edge[1], edge[2]
         g_mst.add_edge(source, destination, power)  #we add the 'elected' edges to the mst
     
+    
     print("End", g_mst)
+    print("mst dict of nodes is", g_mst.dict_edges)
+    g_mst.dfs_parents(1, [], {1:(1,0)}, {1:0} )
+
     return g_mst
 
 
+def routes_out_from_file(filename,filename2,powers=[]):
+    """
+    This function reads a given file and returns an output file containing the minimum power needed to go from a start to a destination
+    """
 
-def kruskal_min_power(g, source, destination)
+    g=graph_from_file(filename2)
+    k=kruskal(g)   
 
-list_of_paths = []
- 
-for component in g.connected_components():
-    if source in component and destination in component: #if there is a connection between source and destination
-        queue = [[source]]
-        list_visited = []
+    with open(filename,"r") as file:
+        n=int(file.readline())
+        print(n)
 
-    while queue != []: #we explore all possible paths, meaning we explore all nodes
-        current_path = queue.pop() #
-        last_node = current_path[-1]
+        for _ in range(1,n+1):
+            trajets=list(map(int,file.readline().split())) 
+            k.parents_and_depths(trajets[0], [], {trajets[0]:(trajets[0],0)}, {trajets[0]:0},depth=0)
+            a=k.min_power_kruskal(trajets[0],trajets[1],[],[],[],0)
+            powers.append(a[1])
 
-        if last_node == destination: 
-           power_required_for_the_path = 0
-            for i in range(len(current_path)-1):
-                for neighbor in g.graph[current_path[i]]:
-                    if neighbor[0] == current_path[i+1]:
-                        power_required_for_the_path = max(power_required_for_the_path, neighbor[1])
-                        list_of_paths.append(current_path)
-                        
-                else:
-                    for neighbor in g.graph[last_node]:
-                        if neighbor[0] not in current_path: #we don't go over the same node twice 
-                            queue.append(current_path+[neighbor[0]]) 
-                            list_visited.append(neighbor[0]) #this node has been visited
+    f=open('routes.x.out','w',encoding='utf-8')
 
+    for k in range(1,n+1):
+        f.write(str(powers[k-1])+"\n")
     
-    return path, min_power
+    f.close()
+
+    return f
+
+
+class Catalogue:
+    """
+    This class is used to create a catalogue of trucks and paths. It stores :
+    - the power and cost of each truck 
+    - the min_power and profit of each path.
+    """
+   
+    def __init__(self,trucks=[],paths=[]):
+        self.trucks=trucks
+        self.paths=paths
+        self.catalogue_trucks = dict([(n, []) for n in trucks])
+        self.nb_trucks = len(trucks)
+        self.nb_paths=len(paths)
+        self.catalogue_paths=dict((m,[])for m in paths)
+        
+    def __str__(self):
+        """Prints two catalogues. One as a list of the power and the cost for each truck (one per line) and one as a list of the min_power and the profit for each path"""
+        if not self.catalogue_trucks or not self.catalogue_paths:
+            output = "The catalogue is empty"            
+        else:
+            output = f"The catalogue has {self.nb_trucks} trucks available and {self.nb_paths} paths possible"
+        return output
     
+    
+    def add_truck(self, truck,power,cost):
+        self.catalogue_trucks[truck]=(power,cost)
+        
+    def add_path(self, path,min_power,profit):
+        self.catalogue_paths[path]=(min_power,profit)
+        
+    def trucks_for_path(self,path):
+        trucks_for_path=[]
+        for i in range(1,len(self.trucks)+1):
+            truck=i
+            
+            if self.catalogue_paths[path][0]<=self.catalogue_trucks[truck][0]:
+                trucks_for_path.append(truck)
+                
+            trucks_for_path = sorted(trucks_for_path, key=lambda truck: self.catalogue_trucks[truck][1])
+        return trucks_for_path
+
+     
+
+def catalogue_from_file(filename1,filename2):
+    """
+    This function reads two files and returns a catalogue of trucks and paths
+    """
+    with open(filename1, "r") as f1, open(filename2, "r") as f2:
+        n = int(f1.readline())
+        m = int(f2.readline())
+        
+        c = Catalogue(tuple(range(1, n+1)),tuple(range(1,m+1)))
+   
+        for i in range(1,n+1):
+            truck = list(map(int,f1.readline().split())) #we read the file line by line and we store the power and the cost of each truck in a list
+            if len(truck) == 2:
+                power=truck[0] #power of the truck
+                cost=truck[1] #cost of the truck
+                c.add_truck(i,power,cost)
+                
+            else:
+                raise Exception('Format incorrect')
+        
+        for i in range(1,m+1):
+            path = list(map(int,f2.readline().split())) 
+            if len(path)==2:
+                min_power=path[0]
+                profit=path[1]
+                c.add_path(i,min_power,profit)  #we add the path to the catalogue
+            else :
+                raise Exception("Format incorrect")
+        return c 
+
+def knapsack(c,solution_optimale={}):
+    """
+    This function returns the utility and the cost of the optimal solution.
+    Input : a catalogue of trucks and paths
+    Output : the utility and the cost of the optimal solution
+    """
+
+    paths_sorted = sorted(c.paths, key=lambda path: c.catalogue_paths[path][1],reverse=True)
+    utility=0
+    total_cost=0
+    for path in paths_sorted:
+        truck=c.trucks_for_path(path)[0]
+        if total_cost + c.catalogue_trucks[truck][1]>25*(10**9): #if we don't have the budget
+            break
+        else:
+            solution_optimale[path]=truck  #we add the path to the solution
+            utility+=c.catalogue_paths[path][1] #we add the profit of the path to the utility
+            total_cost+=c.catalogue_trucks[truck][1] #we add the cost of the truck to the total cost
+    return utility, total_cost,solution_optimale 
